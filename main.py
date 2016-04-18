@@ -12,5 +12,5 @@ stack = [ident(new_matrix())]
 if len(sys.argv) == 2:
     f = open(sys.argv[1])
 
-parse_file( f, edges, transform, screen, color )
+parse_file( f, edges, stack, screen, color )
 f.close()

@@ -5,14 +5,14 @@ import copy
 
 ARG_COMMANDS = [ 'line', 'scale', 'translate', 'xrotate', 'yrotate', 'zrotate', 'circle', 'bezier', 'hermite', 'sphere', 'box', 'torus']
 
-def parse_file( f, points, transform, screen, color ):
+def parse_file( f, points, stack, screen, color ):
 
     commands = f.readlines()
-    transform = stack[len(stack)-1]
-    temp = []
     c = 0
     while c  <  len(commands):
         cmd = commands[c].strip()
+        temp = new_matrix()
+        transform = stack[len(stack) - 1]
         if cmd in ARG_COMMANDS:
             c+= 1
             args = commands[c].strip().split(' ')
@@ -27,23 +27,36 @@ def parse_file( f, points, transform, screen, color ):
                 draw_lines(temp,screen,color)
                 
             elif cmd == 'circle':
-                add_circle( points, args[0], args[1], 0, args[2], .01 )
-            
+                add_circle( temp, args[0], args[1], 0, args[2], .01 )
+                matrix_mult( transform, temp )
+                draw_lines( temp, screen, color )
+                
             elif cmd == 'bezier':
-                add_curve( points, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], .01, 'bezier' )
+                add_curve( temp, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], .01, 'bezier' )
+                matrix_mult( transform, temp )
+                draw_lines( temp, screen, color )
             
             elif cmd == 'hermite':
-                add_curve( points, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], .01, 'hermite' )
-
+                add_curve( temp, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], .01, 'hermite' )
+                matrix_mult( transform, temp )
+                draw_lines( temp, screen, color )
+                
             elif cmd == 'sphere':
-                add_sphere( points, args[0], args[1], 0, args[2], 5 )
-
+                add_sphere( temp, args[0], args[1], 0, args[2], 5 )
+                matrix_mult( transform, temp )
+                draw_polygons( temp, screen, color )
+                
             elif cmd == 'torus':
-                add_torus( points, args[0], args[1], 0, args[2], args[3], 5 )
-
+                add_torus( temp, args[0], args[1], 0, args[2], args[3], 5 )
+                matrix_mult( transform, temp )
+                draw_polygons( temp, screen, color )
+                
             elif cmd == 'box':
-                add_box( points, args[0], args[1], args[2], args[3], args[4], args[5] )
-
+                add_box( temp, args[0], args[1], args[2], args[3], args[4], args[5] )
+                print_matrix(transform)
+                print_matrix(temp)
+                matrix_mult( transform, temp )
+                draw_polygons( temp, screen, color )
 
             elif cmd == 'scale':
                 s = make_scale( args[0], args[1], args[2] )
