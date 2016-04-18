@@ -1,13 +1,15 @@
 from display import *
 from matrix import *
 from draw import *
+import copy
 
 ARG_COMMANDS = [ 'line', 'scale', 'translate', 'xrotate', 'yrotate', 'zrotate', 'circle', 'bezier', 'hermite', 'sphere', 'box', 'torus']
 
 def parse_file( f, points, transform, screen, color ):
 
     commands = f.readlines()
-
+    transform = stack[len(stack)-1]
+    temp = []
     c = 0
     while c  <  len(commands):
         cmd = commands[c].strip()
@@ -20,7 +22,9 @@ def parse_file( f, points, transform, screen, color ):
                 i+= 1
 
             if cmd == 'line':
-                add_edge( points, args[0], args[1], args[2], args[3], args[4], args[5] )
+                add_edge( temp, args[0], args[1], args[2], args[3], args[4], args[5] )
+                matrix_mult(transform,temp)
+                draw_lines(temp,screen,color)
                 
             elif cmd == 'circle':
                 add_circle( points, args[0], args[1], 0, args[2], .01 )
@@ -59,6 +63,12 @@ def parse_file( f, points, transform, screen, color ):
                     r = make_rotZ( angle )
                 matrix_mult( r, transform )
 
+        elif cmd == 'push':
+            stack.append(copy.deepcopy(transform))
+
+        elif cmd == 'pop':
+            stack.pop()
+            
         elif cmd == 'ident':
             ident( transform )
             
