@@ -11,8 +11,7 @@ def parse_file( f, points, stack, screen, color ):
     c = 0
     while c  <  len(commands):
         cmd = commands[c].strip()
-        temp = new_matrix()
-        transform = stack[len(stack) - 1]
+        temp = []
         if cmd in ARG_COMMANDS:
             c+= 1
             args = commands[c].strip().split(' ')
@@ -23,49 +22,48 @@ def parse_file( f, points, stack, screen, color ):
 
             if cmd == 'line':
                 add_edge( temp, args[0], args[1], args[2], args[3], args[4], args[5] )
-                matrix_mult(transform,temp)
+                matrix_mult(stack[-1],temp)
                 draw_lines(temp,screen,color)
                 
             elif cmd == 'circle':
                 add_circle( temp, args[0], args[1], 0, args[2], .01 )
-                matrix_mult( transform, temp )
+                matrix_mult( stack[-1], temp )
                 draw_lines( temp, screen, color )
                 
             elif cmd == 'bezier':
                 add_curve( temp, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], .01, 'bezier' )
-                matrix_mult( transform, temp )
+                matrix_mult( stack[-1], temp )
                 draw_lines( temp, screen, color )
             
             elif cmd == 'hermite':
                 add_curve( temp, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], .01, 'hermite' )
-                matrix_mult( transform, temp )
+                matrix_mult( stack[-1], temp )
                 draw_lines( temp, screen, color )
                 
             elif cmd == 'sphere':
                 add_sphere( temp, args[0], args[1], 0, args[2], 5 )
-                matrix_mult( transform, temp )
+                matrix_mult( stack[-1], temp )
                 draw_polygons( temp, screen, color )
                 
             elif cmd == 'torus':
                 add_torus( temp, args[0], args[1], 0, args[2], args[3], 5 )
-                matrix_mult( transform, temp )
+                matrix_mult( stack[-1], temp )
                 draw_polygons( temp, screen, color )
                 
             elif cmd == 'box':
                 add_box( temp, args[0], args[1], args[2], args[3], args[4], args[5] )
-                print_matrix(transform)
-                print_matrix(temp)
-                matrix_mult( transform, temp )
+                matrix_mult( stack[-1], temp )
                 draw_polygons( temp, screen, color )
 
             elif cmd == 'scale':
                 s = make_scale( args[0], args[1], args[2] )
-                matrix_mult( s, transform )
-
+                matrix_mult( stack[-1],s )
+                stack[-1] = s
             elif cmd == 'translate':
                 t = make_translate( args[0], args[1], args[2] )
-                matrix_mult( t, transform )
-
+                matrix_mult( stack[-1], t )
+                stack[-1] = t
+                
             else:
                 angle = args[0] * ( math.pi / 180 )
                 if cmd == 'xrotate':
@@ -74,26 +72,27 @@ def parse_file( f, points, stack, screen, color ):
                     r = make_rotY( angle )
                 elif cmd == 'zrotate':
                     r = make_rotZ( angle )
-                matrix_mult( r, transform )
-
+                matrix_mult( stack[-1], r )
+                stack[-1] = r
+                
         elif cmd == 'push':
-            stack.append(copy.deepcopy(transform))
+            stack.append(copy.deepcopy(stack[-1]))
 
         elif cmd == 'pop':
             stack.pop()
             
         elif cmd == 'ident':
-            ident( transform )
+            ident( stack[-1] )
             
         elif cmd == 'apply':
-            matrix_mult( transform, points )
+            matrix_mult( stack[-1], points )
 
         elif cmd == 'clear':
             points = []
 
         elif cmd in ['display', 'save' ]:
-            screen = new_screen()
-            draw_polygons( points, screen, color )
+            #screen = new_screen()
+            #draw_polygons( points, screen, color )
             
             if cmd == 'display':
                 display( screen )

@@ -8,7 +8,8 @@ screen = new_screen()
 color = [ 0, 255, 0 ]
 edges = []
 transform = new_matrix()
-stack = [ident(new_matrix())]
+stack = [new_matrix()]
+ident(stack[0])
 if len(sys.argv) == 2:
     f = open(sys.argv[1])
 
